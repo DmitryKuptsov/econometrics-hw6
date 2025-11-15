@@ -1,0 +1,94 @@
+\documentclass[12pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc} 
+\usepackage[a4paper]{geometry}
+\usepackage{gensymb}
+\geometry{a4paper, margin=1in}
+\usepackage{natbib}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{threeparttable}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\title{Assignment 6}
+\author{Dmitrii Kuptsov}
+\begin{document}
+\maketitle
+\section*{Task 3}
+
+\subsection*{Task 3.1}
+
+
+First, we need to estimate the following equation:
+
+\[
+y_i = \beta_0 + \beta_1 \,\text{kidcount}_i + X_i' \beta + \varepsilon_i ,
+\]
+
+where $y_i$ is the employment status of woman i, $kidcount_i$ is the number of children for woman i and X is the matrix of the controls. We need to decide, which variables from the dataset can be used as controls:
+
+1. Sex of the first child (sexk). Although sexk is statistically related to kidcount in our dataset, it does not predict mothers’ employment. A confounder must affect both the endogenous regressor and the outcome variable. Since sexk does not influence labor supply, it does not confound the relationship between fertility and employment and should not be included as a control. Therefore, I exclude sexk from the set of controls.
+
+2. Mother’s age and race should be included because they are key confounding variables that affect both fertility and labor supply. Age is strongly correlated with employment decisions and with the likelihood of having additional children. Race is correlated with labor market opportunities, discrimination, and cultural norms that influence both childbearing and work. Omitting these variables would lead to omitted variable bias, since kidcount would be correlated with unobserved determinants of employment.
+
+To estimate OLS, we need to run the following regression:
+
+\textit{reg workedm kidcount agem sexk blackm hispm othracem}
+
+Although OLS can be used with a binary dependent variable as a Linear Probability Model, it has well-known disadvantages. For example, it can predict probabilities outside the [0,1] range. Probit addresses these functional-form issues by modeling employment as a probability bounded between 0 and 1.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{econometrics_hw6_ols_act.png}
+    \caption{Results of the OLS regression}
+\end{figure}
+
+The results show that $\beta_1$ estimate is significant at any reasonable level. If we interpret this OLS as linear probability model, we can say that the probability of an employment decreases on 9\% with an additional child. Also, it is important to mention that this model is measuring the degree of association, so it is not causal. OLS and probit do not recover a causal effect because kidcount is endogenous. Fertility decisions are correlated with unobserved preferences, labor market attachment, and household characteristics, all of which also affect employment. There is also reverse causality (labor supply influences fertility). Adding demographic controls does not eliminate this correlation. Therefore, both OLS and probit estimate associations, not causal effects.
+
+Next, we change the model from linear probability model to probit. Therefore, now the output of the model is limited from 0 to 1. However, this model is still measuring the association, and not causality. The results of the probit model are below.
+
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{econometrics_hw6_probit_act.png}
+    \caption{Results of the probit regression}
+\end{figure}
+
+\subsection*{Task 3.2}
+
+To make our model causal, we instrument the number of children with the indicator that the last birth was to twins. A twin birth mechanically increases the number of children, so twin\_latest → kidcount, which satisfies the relevance condition. The first-stage regression confirms this: mothers whose last birth was a twin have significantly more children on average.
+
+
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{econometrics_hw6_ivprobit_firststage_act.png}
+    \caption{Results of the first stage of IV probit regression}
+\end{figure}
+
+For the instrument to be valid, it must also satisfy the exclusion restriction, meaning that twin\_latest should affect employment only through its impact on the number of children. The main justification for this assumption is that the occurrence of twins is largely random and not chosen by the mother. However, this assumption may be imperfect in practice. Twin births can influence the mother’s employment directly through channels other than family size—for example, a twin birth may increase childcare burden, create additional expenses, or be associated with birth complications, all of which can directly affect labor supply. These channels violate the strict exclusion restriction because they represent effects of twin\_latest that are not mediated solely through kidcount.
+
+
+The results of the IV probit regression are shown below. Compared to the standard probit estimates, the magnitude of the coefficient on kidcount becomes smaller and is significant only at the 10\% level. The IV probit coefficient on kidcount is –0.07, indicating that an additional child reduces the latent propensity for employment. Probit coefficients do not translate directly into probability changes, so this value should not be interpreted as a 7 percentage point decrease. The sign and magnitude indicate a negative association in the latent index, but the corresponding effect on employment probability must be evaluated using marginal effects.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{econometrics_hw6_ivprobit_act.png}
+    \caption{Results of the IV probit regression}
+\end{figure}
+
+
+\subsection*{Task 3.3}
+
+Here is the marginal effect of the number of children on the probability of mother's employment.
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{econometrics_hw6_marginal_effect_.png}
+    \caption{Marginal effect of the number of children on the probability of mother's employment}
+\end{figure}
+
+As we can see, the marginal effect becomes more negative when moving from two to four or five children, suggesting a stronger association between having additional children and lower employment probability. However, the pattern after the fifth child should not be interpreted substantively. Very few mothers in the sample have five or more children, so the confidence intervals widen substantially in that range and the apparent reversal is not statistically meaningful. In other words, the shape of the curve beyond four children is driven mostly by limited data and estimation noise, rather than by a real economic effect.
+
+\end{document}
